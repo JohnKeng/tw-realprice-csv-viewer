@@ -262,7 +262,7 @@ async function handleUpload(req, res) {
 }
 
 async function listHandler(req, res, q) {
-  const { city='a', type='a', page='1', limit='20', keyword='', district='' } = q;
+  const { city='a', type='a', page='1', limit='20', keyword='', district='', includeBuilding='true', includeLand='true' } = q;
   const file = path.join(DATA_ROOT, `${city}_lvr_land_${type}.csv`);
   if (!fs.existsSync(file)) return json(res, 200, { header: [], rows: [], page: 1, limit: 20, total: 0 });
 
@@ -273,6 +273,10 @@ async function listHandler(req, res, q) {
   const picked = [];
   let header = null;
   const keywordLower = (keyword || '').trim().toLowerCase();
+  
+  // 房地與土地篩選參數（僅不動產買賣時使用）
+  const shouldIncludeBuilding = includeBuilding === 'true';
+  const shouldIncludeLand = includeLand === 'true';
 
   await streamCSV(file, (h) => { header = h; }, async (row, h) => {
     let ok = true;
@@ -288,6 +292,29 @@ async function listHandler(req, res, q) {
       const di = header.indexOf('鄉鎮市區');
       if (row[di] !== district) return;
     }
+    
+    // 房地與土地篩選（僅不動產買賣時使用）
+    if (type === 'a') {
+      const transactionSignIdx = h.indexOf('交易標的');
+      if (transactionSignIdx >= 0) {
+        const transactionSign = row[transactionSignIdx] || '';
+        const isBuilding = transactionSign.includes('房地') || transactionSign.includes('建物') || transactionSign.includes('住宅');
+        const isLand = transactionSign.includes('土地') && !transactionSign.includes('房地');
+        
+        // 如果兩個都不選，則顯示全部
+        if (!shouldIncludeBuilding && !shouldIncludeLand) {
+          // 都不選時顯示全部
+        } else if (shouldIncludeBuilding && !shouldIncludeLand) {
+          // 只選房地
+          if (!isBuilding) return;
+        } else if (!shouldIncludeBuilding && shouldIncludeLand) {
+          // 只選土地
+          if (!isLand) return;
+        }
+        // 兩個都選時顯示全部，不需要額外判斷
+      }
+    }
+    
     total++;
     if (total > start && picked.length < L) picked.push(row);
   });
