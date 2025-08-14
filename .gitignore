@@ -1,3 +1,4 @@
+
 # Logs
 logs
 *.log
@@ -144,3 +145,4 @@ vite.config.ts.timestamp-*
 attached_assets/
 .replit
 replit.md
+data/
