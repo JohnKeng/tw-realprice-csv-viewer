@@ -137,3 +137,10 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+
+.DS_Store
+*.tar.gz
+attached_assets/
+.replit
+replit.md
