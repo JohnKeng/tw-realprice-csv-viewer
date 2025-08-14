@@ -144,5 +144,6 @@ vite.config.ts.timestamp-*
 *.tar.gz
 attached_assets/
 .replit
+replit.nix
 replit.md
 data/
