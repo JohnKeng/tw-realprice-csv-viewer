@@ -1,4 +1,3 @@
-
 let CURRENT = { page: 1, total: 0 };
 let COLUMN_CONFIG = {
   visible: {},
@@ -125,7 +124,7 @@ async function loadManifest() {
   const data = await fetchJSON("/api/manifest");
   const periodText = data.periodFriendly || data.period || "";
   document.getElementById("period").textContent = periodText;
-  
+
   // 更新期間顯示
   updatePeriodDisplay(periodText);
 
@@ -174,7 +173,7 @@ function computeColWidths(header, rows) {
   const specialWide = new Set(["土地位置建物門牌", "備註", "建案名稱"]);
   const widthMode = document.getElementById("widthMode").value;
   const multiplier = WIDTH_MULTIPLIER[widthMode];
-  
+
   return header.map((h, i) => {
     let max = measureTextWidth(String(h));
     for (const r of samples) {
@@ -210,7 +209,7 @@ function renderTable(header, rows) {
   initColumnConfig(header);
   const visibleCols = getVisibleColumns();
   const visibleIndices = visibleCols.map(col => header.indexOf(col)).filter(i => i >= 0);
-  
+
   const container = document.getElementById("table");
   const table = el("table");
   const widths = computeColWidths(visibleCols, rows.map(row => visibleIndices.map(i => row[i])));
@@ -278,7 +277,7 @@ async function query(page = 1) {
   const district = encodeURIComponent(
     document.getElementById("district").value || "",
   );
-  
+
   // 房地與土地篩選參數（僅不動產買賣時使用）
   let filterParams = '';
   if (type === 'a') {
@@ -286,7 +285,7 @@ async function query(page = 1) {
     const includeLand = document.getElementById("includeLand").checked;
     filterParams = `&includeBuilding=${includeBuilding}&includeLand=${includeLand}`;
   }
-  
+
   const data = await fetchJSON(
     `/api/list?city=${city}&type=${type}&district=${district}&page=${page}&limit=${limit}&keyword=${keyword}${filterParams}`,
   );
@@ -318,7 +317,7 @@ function closeModal() {
 function updatePeriodDisplay(periodText) {
   const periodDisplay = document.getElementById("periodDisplay");
   const periodTextEl = document.getElementById("periodText");
-  
+
   if (periodText && periodText.trim()) {
     periodTextEl.textContent = periodText;
     periodDisplay.classList.remove("hidden");
@@ -419,17 +418,17 @@ function renderKV(header, row, colsPerRow = 3) {
 function showInfoCard(header, row) {
   const card = document.getElementById("infoCard");
   const body = document.getElementById("infoCardBody");
-  
+
   // 取得相關欄位的索引
   const dateIdx = header.findIndex(h => h.includes("交易年月日"));
   const priceIdx = header.findIndex(h => h.includes("單價元平方公尺"));
   const addressIdx = header.findIndex(h => h.includes("土地位置建物門牌"));
   const areaIdx = header.findIndex(h => h.includes("建物移轉總面積平方公尺"));
-  
+
   const decimals = parseInt(document.getElementById("priceDecimals").value);
-  
+
   let content = "";
-  
+
   if (dateIdx >= 0 && row[dateIdx]) {
     const adDate = formatROCDate(row[dateIdx]);
     content += `<div class="info-item">
@@ -437,14 +436,14 @@ function showInfoCard(header, row) {
       <div class="info-value">${adDate}</div>
     </div>`;
   }
-  
+
   if (addressIdx >= 0 && row[addressIdx]) {
     content += `<div class="info-item">
       <div class="info-label">地址</div>
       <div class="info-value">${row[addressIdx]}</div>
     </div>`;
   }
-  
+
   if (priceIdx >= 0 && row[priceIdx]) {
     const pricePerSqm = parseFloat(row[priceIdx]);
     if (!isNaN(pricePerSqm)) {
@@ -455,7 +454,7 @@ function showInfoCard(header, row) {
       </div>`;
     }
   }
-  
+
   if (areaIdx >= 0 && row[areaIdx]) {
     const areaSqm = parseFloat(row[areaIdx]);
     if (!isNaN(areaSqm)) {
@@ -466,7 +465,7 @@ function showInfoCard(header, row) {
       </div>`;
     }
   }
-  
+
   body.innerHTML = content;
   card.classList.remove("hidden");
 }
@@ -475,46 +474,46 @@ function showInfoCard(header, row) {
 function showColumnPanel() {
   const panel = document.getElementById("columnPanel");
   const list = document.getElementById("columnList");
-  
+
   list.innerHTML = "";
   COLUMN_CONFIG.order.forEach((col, index) => {
     const item = el("div", { class: "column-item", "data-column": col });
-    
+
     if (col === COLUMN_CONFIG.locked) {
       item.classList.add("locked");
     }
-    
+
     const checkbox = el("input", {
       type: "checkbox",
       class: "column-checkbox",
       checked: COLUMN_CONFIG.visible[col] ? "checked" : ""
     });
-    
+
     if (col === COLUMN_CONFIG.locked) {
       checkbox.disabled = true;
       checkbox.checked = true;
     }
-    
+
     checkbox.onchange = () => {
       COLUMN_CONFIG.visible[col] = checkbox.checked;
       saveColumnConfig();
     };
-    
+
     const label = el("div", { class: "column-label" }, col);
     const handle = el("div", { class: "drag-handle" }, "⋮⋮");
-    
+
     item.appendChild(handle);
     item.appendChild(checkbox);
     item.appendChild(label);
-    
+
     if (col === COLUMN_CONFIG.locked) {
       const badge = el("span", { class: "column-badge" }, "鎖定");
       item.appendChild(badge);
     }
-    
+
     list.appendChild(item);
   });
-  
+
   panel.classList.remove("hidden");
   initSortable();
 }
@@ -522,7 +521,7 @@ function showColumnPanel() {
 function initSortable() {
   const list = document.getElementById("columnList");
   let draggedElement = null;
-  
+
   list.addEventListener("dragstart", (e) => {
     if (e.target.closest(".column-item.locked")) {
       e.preventDefault();
@@ -531,40 +530,40 @@ function initSortable() {
     draggedElement = e.target.closest(".column-item");
     draggedElement.style.opacity = "0.5";
   });
-  
+
   list.addEventListener("dragend", (e) => {
     if (draggedElement) {
       draggedElement.style.opacity = "";
       draggedElement = null;
     }
   });
-  
+
   list.addEventListener("dragover", (e) => {
     e.preventDefault();
   });
-  
+
   list.addEventListener("drop", (e) => {
     e.preventDefault();
     if (!draggedElement) return;
-    
+
     const dropTarget = e.target.closest(".column-item");
     if (!dropTarget || dropTarget === draggedElement) return;
-    
+
     const draggedCol = draggedElement.dataset.column;
     const targetCol = dropTarget.dataset.column;
-    
+
     if (draggedCol === COLUMN_CONFIG.locked || targetCol === COLUMN_CONFIG.locked) return;
-    
+
     const draggedIndex = COLUMN_CONFIG.order.indexOf(draggedCol);
     const targetIndex = COLUMN_CONFIG.order.indexOf(targetCol);
-    
+
     COLUMN_CONFIG.order.splice(draggedIndex, 1);
     COLUMN_CONFIG.order.splice(targetIndex, 0, draggedCol);
-    
+
     saveColumnConfig();
     showColumnPanel(); // 重新渲染
   });
-  
+
   // 讓項目可拖拽
   list.querySelectorAll(".column-item:not(.locked)").forEach(item => {
     item.draggable = true;
@@ -610,7 +609,6 @@ document
       document.getElementById("reupStatus").textContent = "上傳完成";
       const periodText = (r.periodFriendly || r.period || "").trim();
       if (periodText) {
-        document.getElementById("period").textContent = periodText;
         updatePeriodDisplay(periodText);
       }
       await loadManifest();
@@ -665,7 +663,7 @@ document.getElementById("city").onchange = async () => {
 };
 document.getElementById("type").onchange = async () => {
   await loadDistricts();
-  
+
   // 顯示/隱藏房地與土地篩選器（僅不動產買賣顯示）
   const filterGroup = document.getElementById("landBuildingFilter");
   const type = document.getElementById("type").value;
@@ -674,7 +672,7 @@ document.getElementById("type").onchange = async () => {
   } else {
     filterGroup.classList.add('hidden');
   }
-  
+
   query(1);
 };
 document.getElementById("district").onchange = () => query(1);
@@ -764,7 +762,7 @@ window.addEventListener("unhandledrejection", (e) => {
 (async () => {
   try {
     loadColumnConfig(); // 載入欄位配置
-    
+
     const m = await fetchJSON("/api/manifest");
     if (m && m.files && Object.keys(m.files).length) {
       const periodText = m.periodFriendly || m.period || "";
@@ -773,7 +771,7 @@ window.addEventListener("unhandledrejection", (e) => {
       await loadManifest();
       show("uploadCard", false);
       show("browser", true);
-      
+
       // 初始設定篩選器顯示狀態
       const filterGroup = document.getElementById("landBuildingFilter");
       const type = document.getElementById("type").value;
