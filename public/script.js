@@ -473,15 +473,27 @@ function createInfoSection(header, row) {
 
   const decimals = parseInt(document.getElementById("priceDecimals").value);
 
-  // 判斷是否為土地交易
+  // 判斷交易類型
   let isLandTransaction = false;
+  let isRentalTransaction = false;
+  
+  // 檢查是否為土地交易
   if (transactionSignIdx >= 0 && row[transactionSignIdx]) {
     const transactionSign = row[transactionSignIdx] || '';
     isLandTransaction = transactionSign.includes('土地') && !transactionSign.includes('房地');
   }
+  
+  // 檢查是否為租賃交易（通過檢查URL type參數或租金相關欄位）
+  const url = new URL(window.location);
+  const urlParams = new URLSearchParams(url.search);
+  const currentType = document.getElementById("type").value;
+  isRentalTransaction = currentType === 'c';
 
   const infoCard = el("div", { class: "modal-info-card" });
-  const titleIcon = isLandTransaction ? "🏞️" : "🏠";
+  let titleIcon = "🏠";
+  if (isRentalTransaction) titleIcon = "🏠💰";
+  else if (isLandTransaction) titleIcon = "🏞️";
+  
   const title = el("h3", { style: "margin: 0 0 16px 0; color: #1565c0; font-size: 18px;" }, `${titleIcon} 重點資訊`);
   infoCard.appendChild(title);
 
@@ -506,7 +518,8 @@ function createInfoSection(header, row) {
     const totalPrice = parseFloat(row[totalPriceIdx]);
     if (!isNaN(totalPrice)) {
       const item = el("div", { class: "info-item" });
-      item.appendChild(el("div", { class: "info-label" }, "總價"));
+      const labelText = isRentalTransaction ? "租金" : "總價";
+      item.appendChild(el("div", { class: "info-label" }, labelText));
       item.appendChild(el("div", { class: "info-value price-highlight" }, formatCurrency(totalPrice)));
       infoGrid.appendChild(item);
     }
@@ -521,11 +534,23 @@ function createInfoSection(header, row) {
     if (!isNaN(totalPrice) && !isNaN(areaSqm) && areaSqm > 0) {
       const areaPing = areaSqm * 0.3025; // 平方公尺轉坪
       const pricePerPing = totalPrice / areaPing; // 元/坪
-      const pricePerPingInWan = pricePerPing / 10000; // 轉為萬元/坪
+      
       const item = el("div", { class: "info-item" });
-      const labelText = isLandTransaction ? "每坪單價" : "每坪單價（不含車位）";
+      let labelText, valueText;
+      
+      if (isRentalTransaction) {
+        // 租賃：顯示每坪租金（以元為單位）
+        labelText = "每坪租金";
+        valueText = `NT$ ${formatPrice(pricePerPing, 0)} 元/坪`;
+      } else {
+        // 買賣：顯示每坪單價（以萬元為單位）
+        const pricePerPingInWan = pricePerPing / 10000;
+        labelText = isLandTransaction ? "每坪單價" : "每坪單價（不含車位）";
+        valueText = `NT$ ${formatPrice(pricePerPingInWan, decimals)} 萬/坪`;
+      }
+      
       item.appendChild(el("div", { class: "info-label" }, labelText));
-      item.appendChild(el("div", { class: "info-value price-highlight" }, `NT$ ${formatPrice(pricePerPingInWan, decimals)} 萬/坪`));
+      item.appendChild(el("div", { class: "info-value price-highlight" }, valueText));
       infoGrid.appendChild(item);
     }
   }
