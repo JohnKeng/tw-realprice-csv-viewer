@@ -473,8 +473,8 @@ function createInfoSection(header, row) {
     // 租賃交易的欄位名稱
     dateIdx = header.findIndex(h => h.includes("租賃年月日") || h.includes("交易年月日"));
     addressIdx = header.findIndex(h => h.includes("土地位置建物門牌") || h.includes("土地位置或建物門牌"));
-    totalPriceIdx = header.findIndex(h => h.includes("月租金元") || h.includes("總價元"));
-    buildingAreaIdx = header.findIndex(h => h.includes("建物現況格局-總面積平方公尺") || h.includes("建物移轉總面積平方公尺"));
+    totalPriceIdx = header.findIndex(h => h.includes("總額元"));
+    buildingAreaIdx = header.findIndex(h => h.includes("建物總面積平方公尺"));
     landAreaIdx = header.findIndex(h => h.includes("土地移轉總面積平方公尺"));
     transactionSignIdx = header.findIndex(h => h.includes("交易標的"));
   } else {
