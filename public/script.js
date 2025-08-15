@@ -477,20 +477,23 @@ function createInfoSection(header, row) {
   let isLandTransaction = false;
   let isRentalTransaction = false;
   
-  // 檢查是否為土地交易
-  if (transactionSignIdx >= 0 && row[transactionSignIdx]) {
+  // 檢查是否為租賃交易
+  const currentType = document.getElementById("type").value;
+  isRentalTransaction = (currentType === 'c');
+  
+  // 檢查是否為土地交易（只在非租賃時判斷）
+  if (!isRentalTransaction && transactionSignIdx >= 0 && row[transactionSignIdx]) {
     const transactionSign = row[transactionSignIdx] || '';
     isLandTransaction = transactionSign.includes('土地') && !transactionSign.includes('房地');
   }
-  
-  // 檢查是否為租賃交易
-  const currentType = document.getElementById("type").value;
-  isRentalTransaction = currentType === 'c';
 
   const infoCard = el("div", { class: "modal-info-card" });
   let titleIcon = "🏠";
-  if (isRentalTransaction) titleIcon = "🏠💰";
-  else if (isLandTransaction) titleIcon = "🏞️";
+  if (isRentalTransaction) {
+    titleIcon = "🏠💰";
+  } else if (isLandTransaction) {
+    titleIcon = "🏞️";
+  }
   
   const title = el("h3", { style: "margin: 0 0 16px 0; color: #1565c0; font-size: 18px;" }, `${titleIcon} 重點資訊`);
   infoCard.appendChild(title);
@@ -516,9 +519,13 @@ function createInfoSection(header, row) {
     const totalPrice = parseFloat(row[totalPriceIdx]);
     if (!isNaN(totalPrice)) {
       const item = el("div", { class: "info-item" });
-      const labelText = isRentalTransaction ? "租金" : "總價";
-      item.appendChild(el("div", { class: "info-label" }, labelText));
-      item.appendChild(el("div", { class: "info-value price-highlight" }, formatCurrency(totalPrice)));
+      if (isRentalTransaction) {
+        item.appendChild(el("div", { class: "info-label" }, "租金"));
+        item.appendChild(el("div", { class: "info-value price-highlight" }, formatCurrency(totalPrice)));
+      } else {
+        item.appendChild(el("div", { class: "info-label" }, "總價"));
+        item.appendChild(el("div", { class: "info-value price-highlight" }, formatCurrency(totalPrice)));
+      }
       infoGrid.appendChild(item);
     }
   }
@@ -534,21 +541,19 @@ function createInfoSection(header, row) {
       const pricePerPing = totalPrice / areaPing; // 元/坪
       
       const item = el("div", { class: "info-item" });
-      let labelText, valueText;
       
       if (isRentalTransaction) {
-        // 租賃：顯示每坪租金（以元為單位）
-        labelText = "每坪租金";
-        valueText = `NT$ ${formatPrice(pricePerPing, 0)} 元/坪`;
+        // 租賃：顯示每坪租金（以元為單位，無小數）
+        item.appendChild(el("div", { class: "info-label" }, "每坪租金"));
+        item.appendChild(el("div", { class: "info-value price-highlight" }, `NT$ ${Math.round(pricePerPing).toLocaleString()} 元/坪`));
       } else {
         // 買賣：顯示每坪單價（以萬元為單位）
         const pricePerPingInWan = pricePerPing / 10000;
-        labelText = isLandTransaction ? "每坪單價" : "每坪單價（不含車位）";
-        valueText = `NT$ ${formatPrice(pricePerPingInWan, decimals)} 萬/坪`;
+        const labelText = isLandTransaction ? "每坪單價" : "每坪單價（不含車位）";
+        item.appendChild(el("div", { class: "info-label" }, labelText));
+        item.appendChild(el("div", { class: "info-value price-highlight" }, `NT$ ${formatPrice(pricePerPingInWan, decimals)} 萬/坪`));
       }
       
-      item.appendChild(el("div", { class: "info-label" }, labelText));
-      item.appendChild(el("div", { class: "info-value price-highlight" }, valueText));
       infoGrid.appendChild(item);
     }
   }
@@ -558,7 +563,16 @@ function createInfoSection(header, row) {
     if (!isNaN(areaSqm)) {
       const areaPing = areaSqm * 0.3025;
       const item = el("div", { class: "info-item" });
-      const labelText = isLandTransaction ? "土地面積" : "建物面積";
+      
+      let labelText;
+      if (isRentalTransaction) {
+        labelText = "建物面積"; // 租賃通常是建物
+      } else if (isLandTransaction) {
+        labelText = "土地面積";
+      } else {
+        labelText = "建物面積";
+      }
+      
       item.appendChild(el("div", { class: "info-label" }, labelText));
       item.appendChild(el("div", { class: "info-value" }, `${formatPrice(areaPing, 2)} 坪 (${row[areaIdx]} m²)`));
       infoGrid.appendChild(item);
