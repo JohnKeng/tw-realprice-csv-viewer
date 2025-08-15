@@ -367,16 +367,16 @@ async function loadDetail(id) {
   );
 
   const wrap = el("div", {});
-  
+
   // 先顯示重要資訊卡片
   const infoCard = createInfoSection(data.header, data.row);
   if (infoCard) {
     wrap.appendChild(infoCard);
   }
-  
+
   // 分隔線
   wrap.appendChild(el("hr", { style: "margin: 20px 0; border: none; border-top: 1px solid var(--border);" }));
-  
+
   // 完整詳細資料
   wrap.appendChild(el("h4", {}, "完整詳細資料"));
   wrap.appendChild(renderKV(data.header, data.row, getKVColsPerRow()));
@@ -426,7 +426,7 @@ function renderKV(header, row, colsPerRow = 3) {
           ),
         );
         let val = row[idx] ?? "";
-        
+
         // 格式化金額相關欄位
         if (header[idx].includes("元") && !header[idx].includes("平方公尺") && val && !isNaN(val)) {
           if (header[idx].includes("交易年月日")) {
@@ -440,7 +440,7 @@ function renderKV(header, row, colsPerRow = 3) {
           // 日期轉換
           val = formatROCDate(val);
         }
-        
+
         tr.appendChild(
           el(
             "td",
@@ -502,13 +502,17 @@ function createInfoSection(header, row) {
     }
   }
 
-  if (priceIdx >= 0 && row[priceIdx]) {
-    const pricePerSqm = parseFloat(row[priceIdx]);
-    if (!isNaN(pricePerSqm)) {
-      const pricePerPing = calculatePricePerPing(pricePerSqm);
+  // 修正每坪單價計算：使用總價除以坪數
+  if (totalPriceIdx >= 0 && areaIdx >= 0 && row[totalPriceIdx] && row[areaIdx]) {
+    const totalPrice = parseFloat(row[totalPriceIdx]);
+    const areaSqm = parseFloat(row[areaIdx]);
+    if (!isNaN(totalPrice) && !isNaN(areaSqm) && areaSqm > 0) {
+      const areaPing = areaSqm * 0.3025; // 平方公尺轉坪
+      const pricePerPing = totalPrice / areaPing; // 元/坪
+      const pricePerPingInWan = pricePerPing / 10000; // 轉為萬元/坪
       const item = el("div", { class: "info-item" });
       item.appendChild(el("div", { class: "info-label" }, "每坪單價（不含車位）"));
-      item.appendChild(el("div", { class: "info-value price-highlight" }, `NT$ ${formatPrice(pricePerPing, decimals)} 萬/坪`));
+      item.appendChild(el("div", { class: "info-value price-highlight" }, `NT$ ${formatPrice(pricePerPingInWan, decimals)} 萬/坪`));
       infoGrid.appendChild(item);
     }
   }
