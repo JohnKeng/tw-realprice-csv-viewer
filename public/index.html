@@ -81,6 +81,25 @@
             
             <input type="text" id="keyword" placeholder="關鍵字（地址/備註）" />
             <button id="go" class="btn-accent">查詢</button>
+            
+            <!-- 工具列控制項 -->
+            <div class="toolbar-group">
+              <label>單價小數</label>
+              <select id="priceDecimals">
+                <option value="0">0位</option>
+                <option value="1" selected>1位</option>
+                <option value="2">2位</option>
+              </select>
+              
+              <label>寬度</label>
+              <select id="widthMode">
+                <option value="compact">緊湊</option>
+                <option value="standard" selected>標準</option>
+                <option value="loose">寬鬆</option>
+              </select>
+              
+              <button id="columnManager" class="btn-accent">欄位</button>
+            </div>
 
             <!-- ===== 新增：重新上傳 ZIP ===== -->
             <button
@@ -131,6 +150,31 @@
         <div class="modal-bd" id="modalBody">
           <!-- 動態塞入 -->
         </div>
+      </div>
+    </div>
+
+    <!-- 欄位管理面板 -->
+    <div id="columnPanel" class="column-panel hidden">
+      <div class="column-panel-header">
+        <h3>欄位管理</h3>
+        <div>
+          <button id="resetColumns" class="btn-secondary">重設</button>
+          <button id="closeColumnPanel" class="icon-btn">✕</button>
+        </div>
+      </div>
+      <div class="column-panel-body">
+        <div id="columnList"></div>
+      </div>
+    </div>
+
+    <!-- 資訊卡 -->
+    <div id="infoCard" class="info-card hidden">
+      <div class="info-card-header">
+        <span>詳細資訊</span>
+        <button id="closeInfoCard" class="icon-btn">✕</button>
+      </div>
+      <div class="info-card-body" id="infoCardBody">
+        <!-- 動態內容 -->
       </div>
     </div>
 
