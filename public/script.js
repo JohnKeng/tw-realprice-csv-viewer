@@ -466,13 +466,23 @@ function createInfoSection(header, row) {
   const dateIdx = header.findIndex(h => h.includes("交易年月日"));
   const priceIdx = header.findIndex(h => h.includes("單價元平方公尺"));
   const addressIdx = header.findIndex(h => h.includes("土地位置建物門牌"));
-  const areaIdx = header.findIndex(h => h.includes("建物移轉總面積平方公尺"));
+  const buildingAreaIdx = header.findIndex(h => h.includes("建物移轉總面積平方公尺"));
+  const landAreaIdx = header.findIndex(h => h.includes("土地移轉總面積平方公尺"));
   const totalPriceIdx = header.findIndex(h => h.includes("總價元"));
+  const transactionSignIdx = header.findIndex(h => h.includes("交易標的"));
 
   const decimals = parseInt(document.getElementById("priceDecimals").value);
 
+  // 判斷是否為土地交易
+  let isLandTransaction = false;
+  if (transactionSignIdx >= 0 && row[transactionSignIdx]) {
+    const transactionSign = row[transactionSignIdx] || '';
+    isLandTransaction = transactionSign.includes('土地') && !transactionSign.includes('房地');
+  }
+
   const infoCard = el("div", { class: "modal-info-card" });
-  const title = el("h3", { style: "margin: 0 0 16px 0; color: #1565c0; font-size: 18px;" }, "🏠 重點資訊");
+  const titleIcon = isLandTransaction ? "🏞️" : "🏠";
+  const title = el("h3", { style: "margin: 0 0 16px 0; color: #1565c0; font-size: 18px;" }, `${titleIcon} 重點資訊`);
   infoCard.appendChild(title);
 
   const infoGrid = el("div", { class: "info-grid" });
@@ -502,7 +512,9 @@ function createInfoSection(header, row) {
     }
   }
 
-  // 修正每坪單價計算：使用總價除以坪數
+  // 根據交易類型選擇適當的面積欄位和計算單價
+  const areaIdx = isLandTransaction ? landAreaIdx : buildingAreaIdx;
+  
   if (totalPriceIdx >= 0 && areaIdx >= 0 && row[totalPriceIdx] && row[areaIdx]) {
     const totalPrice = parseFloat(row[totalPriceIdx]);
     const areaSqm = parseFloat(row[areaIdx]);
@@ -511,7 +523,8 @@ function createInfoSection(header, row) {
       const pricePerPing = totalPrice / areaPing; // 元/坪
       const pricePerPingInWan = pricePerPing / 10000; // 轉為萬元/坪
       const item = el("div", { class: "info-item" });
-      item.appendChild(el("div", { class: "info-label" }, "每坪單價（不含車位）"));
+      const labelText = isLandTransaction ? "每坪單價" : "每坪單價（不含車位）";
+      item.appendChild(el("div", { class: "info-label" }, labelText));
       item.appendChild(el("div", { class: "info-value price-highlight" }, `NT$ ${formatPrice(pricePerPingInWan, decimals)} 萬/坪`));
       infoGrid.appendChild(item);
     }
@@ -522,7 +535,8 @@ function createInfoSection(header, row) {
     if (!isNaN(areaSqm)) {
       const areaPing = areaSqm * 0.3025;
       const item = el("div", { class: "info-item" });
-      item.appendChild(el("div", { class: "info-label" }, "建物面積"));
+      const labelText = isLandTransaction ? "土地面積" : "建物面積";
+      item.appendChild(el("div", { class: "info-label" }, labelText));
       item.appendChild(el("div", { class: "info-value" }, `${formatPrice(areaPing, 2)} 坪 (${row[areaIdx]} m²)`));
       infoGrid.appendChild(item);
     }
