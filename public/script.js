@@ -515,6 +515,7 @@ function createInfoSection(header, row) {
     infoGrid.appendChild(item);
   }
 
+  // 顯示租金/總價
   if (totalPriceIdx >= 0 && row[totalPriceIdx]) {
     const totalPrice = parseFloat(row[totalPriceIdx]);
     if (!isNaN(totalPrice)) {
@@ -530,9 +531,30 @@ function createInfoSection(header, row) {
     }
   }
 
-  // 根據交易類型選擇適當的面積欄位和計算單價
+  // 顯示面積
   const areaIdx = isLandTransaction ? landAreaIdx : buildingAreaIdx;
+  if (areaIdx >= 0 && row[areaIdx]) {
+    const areaSqm = parseFloat(row[areaIdx]);
+    if (!isNaN(areaSqm)) {
+      const areaPing = areaSqm * 0.3025;
+      const item = el("div", { class: "info-item" });
+      
+      let labelText;
+      if (isRentalTransaction) {
+        labelText = "坪數"; // 租賃使用簡潔的"坪數"
+      } else if (isLandTransaction) {
+        labelText = "土地面積";
+      } else {
+        labelText = "建物面積";
+      }
+      
+      item.appendChild(el("div", { class: "info-label" }, labelText));
+      item.appendChild(el("div", { class: "info-value" }, `${formatPrice(areaPing, 2)} 坪 (${row[areaIdx]} m²)`));
+      infoGrid.appendChild(item);
+    }
+  }
   
+  // 顯示每坪單價/租金
   if (totalPriceIdx >= 0 && areaIdx >= 0 && row[totalPriceIdx] && row[areaIdx]) {
     const totalPrice = parseFloat(row[totalPriceIdx]);
     const areaSqm = parseFloat(row[areaIdx]);
@@ -554,27 +576,6 @@ function createInfoSection(header, row) {
         item.appendChild(el("div", { class: "info-value price-highlight" }, `NT$ ${formatPrice(pricePerPingInWan, decimals)} 萬/坪`));
       }
       
-      infoGrid.appendChild(item);
-    }
-  }
-
-  if (areaIdx >= 0 && row[areaIdx]) {
-    const areaSqm = parseFloat(row[areaIdx]);
-    if (!isNaN(areaSqm)) {
-      const areaPing = areaSqm * 0.3025;
-      const item = el("div", { class: "info-item" });
-      
-      let labelText;
-      if (isRentalTransaction) {
-        labelText = "建物面積"; // 租賃通常是建物
-      } else if (isLandTransaction) {
-        labelText = "土地面積";
-      } else {
-        labelText = "建物面積";
-      }
-      
-      item.appendChild(el("div", { class: "info-label" }, labelText));
-      item.appendChild(el("div", { class: "info-value" }, `${formatPrice(areaPing, 2)} 坪 (${row[areaIdx]} m²)`));
       infoGrid.appendChild(item);
     }
   }
