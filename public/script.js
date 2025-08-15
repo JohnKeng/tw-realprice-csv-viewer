@@ -61,6 +61,22 @@ function formatPrice(price, decimals = 1) {
   if (!price || isNaN(price)) return '';
   return parseFloat(price).toFixed(decimals);
 }
+
+function formatCurrency(amount) {
+  if (!amount || isNaN(amount)) return '';
+  const num = parseFloat(amount);
+  if (num >= 10000) {
+    const wan = Math.floor(num / 10000);
+    const remainder = num % 10000;
+    if (remainder === 0) {
+      return `${wan}萬元`;
+    } else {
+      return `${wan}萬${remainder.toLocaleString()}元`;
+    }
+  } else {
+    return `${num.toLocaleString()}元`;
+  }
+}
 async function fetchJSON(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(await res.text());
@@ -259,7 +275,6 @@ function renderTable(header, rows) {
     const btn = el("button", { "data-id": id, class: "nowrap" }, "查看");
     btn.onclick = () => {
       loadDetail(id);
-      showInfoCard(header, row);
     };
     const op = el("td", { class: "sticky-right" }, btn);
     tr.appendChild(op);
@@ -352,6 +367,18 @@ async function loadDetail(id) {
   );
 
   const wrap = el("div", {});
+  
+  // 先顯示重要資訊卡片
+  const infoCard = createInfoSection(data.header, data.row);
+  if (infoCard) {
+    wrap.appendChild(infoCard);
+  }
+  
+  // 分隔線
+  wrap.appendChild(el("hr", { style: "margin: 20px 0; border: none; border-top: 1px solid var(--border);" }));
+  
+  // 完整詳細資料
+  wrap.appendChild(el("h4", {}, "完整詳細資料"));
   wrap.appendChild(renderKV(data.header, data.row, getKVColsPerRow()));
 
   if (data.details?.land?.length) {
@@ -398,7 +425,22 @@ function renderKV(header, row, colsPerRow = 3) {
             header[idx],
           ),
         );
-        const val = row[idx] ?? "";
+        let val = row[idx] ?? "";
+        
+        // 格式化金額相關欄位
+        if (header[idx].includes("元") && !header[idx].includes("平方公尺") && val && !isNaN(val)) {
+          if (header[idx].includes("交易年月日")) {
+            // 日期欄位特殊處理
+            val = formatROCDate(val);
+          } else {
+            // 金額欄位
+            val = formatCurrency(val);
+          }
+        } else if (header[idx].includes("交易年月日") && val) {
+          // 日期轉換
+          val = formatROCDate(val);
+        }
+        
         tr.appendChild(
           el(
             "td",
@@ -418,44 +460,56 @@ function renderKV(header, row, colsPerRow = 3) {
   return tbl;
 }
 
-// ---------- 資訊卡 ----------
-function showInfoCard(header, row) {
-  const card = document.getElementById("infoCard");
-  const body = document.getElementById("infoCardBody");
-
+// ---------- 資訊卡（整合到彈窗中） ----------
+function createInfoSection(header, row) {
   // 取得相關欄位的索引
   const dateIdx = header.findIndex(h => h.includes("交易年月日"));
   const priceIdx = header.findIndex(h => h.includes("單價元平方公尺"));
   const addressIdx = header.findIndex(h => h.includes("土地位置建物門牌"));
   const areaIdx = header.findIndex(h => h.includes("建物移轉總面積平方公尺"));
+  const totalPriceIdx = header.findIndex(h => h.includes("總價元"));
 
   const decimals = parseInt(document.getElementById("priceDecimals").value);
 
-  let content = "";
+  const infoCard = el("div", { class: "modal-info-card" });
+  const title = el("h3", { style: "margin: 0 0 16px 0; color: #1565c0; font-size: 18px;" }, "🏠 重點資訊");
+  infoCard.appendChild(title);
+
+  const infoGrid = el("div", { class: "info-grid" });
 
   if (dateIdx >= 0 && row[dateIdx]) {
     const adDate = formatROCDate(row[dateIdx]);
-    content += `<div class="info-item">
-      <div class="info-label">交易日期</div>
-      <div class="info-value">${adDate}</div>
-    </div>`;
+    const item = el("div", { class: "info-item" });
+    item.appendChild(el("div", { class: "info-label" }, "交易日期"));
+    item.appendChild(el("div", { class: "info-value" }, adDate));
+    infoGrid.appendChild(item);
   }
 
   if (addressIdx >= 0 && row[addressIdx]) {
-    content += `<div class="info-item">
-      <div class="info-label">地址</div>
-      <div class="info-value">${row[addressIdx]}</div>
-    </div>`;
+    const item = el("div", { class: "info-item" });
+    item.appendChild(el("div", { class: "info-label" }, "地址"));
+    item.appendChild(el("div", { class: "info-value" }, row[addressIdx]));
+    infoGrid.appendChild(item);
+  }
+
+  if (totalPriceIdx >= 0 && row[totalPriceIdx]) {
+    const totalPrice = parseFloat(row[totalPriceIdx]);
+    if (!isNaN(totalPrice)) {
+      const item = el("div", { class: "info-item" });
+      item.appendChild(el("div", { class: "info-label" }, "總價"));
+      item.appendChild(el("div", { class: "info-value price-highlight" }, formatCurrency(totalPrice)));
+      infoGrid.appendChild(item);
+    }
   }
 
   if (priceIdx >= 0 && row[priceIdx]) {
     const pricePerSqm = parseFloat(row[priceIdx]);
     if (!isNaN(pricePerSqm)) {
       const pricePerPing = calculatePricePerPing(pricePerSqm);
-      content += `<div class="info-item">
-        <div class="info-label">每坪單價（不含車位）</div>
-        <div class="info-value price-highlight">NT$ ${formatPrice(pricePerPing, decimals)} 萬/坪</div>
-      </div>`;
+      const item = el("div", { class: "info-item" });
+      item.appendChild(el("div", { class: "info-label" }, "每坪單價（不含車位）"));
+      item.appendChild(el("div", { class: "info-value price-highlight" }, `NT$ ${formatPrice(pricePerPing, decimals)} 萬/坪`));
+      infoGrid.appendChild(item);
     }
   }
 
@@ -463,15 +517,19 @@ function showInfoCard(header, row) {
     const areaSqm = parseFloat(row[areaIdx]);
     if (!isNaN(areaSqm)) {
       const areaPing = areaSqm * 0.3025;
-      content += `<div class="info-item">
-        <div class="info-label">建物面積</div>
-        <div class="info-value">${formatPrice(areaPing, 2)} 坪 (${row[areaIdx]} m²)</div>
-      </div>`;
+      const item = el("div", { class: "info-item" });
+      item.appendChild(el("div", { class: "info-label" }, "建物面積"));
+      item.appendChild(el("div", { class: "info-value" }, `${formatPrice(areaPing, 2)} 坪 (${row[areaIdx]} m²)`));
+      infoGrid.appendChild(item);
     }
   }
 
-  body.innerHTML = content;
-  card.classList.remove("hidden");
+  infoCard.appendChild(infoGrid);
+  return infoCard;
+}
+
+function showInfoCard(header, row) {
+  // 功能已整合到 loadDetail，這裡保留空函數避免錯誤
 }
 
 // ---------- 欄位管理 ----------
