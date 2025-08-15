@@ -123,7 +123,11 @@ function uploadZipWithProgress(file, opts = {}) {
 async function loadManifest() {
   const data = await fetchJSON("/api/manifest");
   const periodText = data.periodFriendly || data.period || "";
-  document.getElementById("period").textContent = periodText;
+  // 修正：確保 'period' 元素存在
+  const periodEl = document.getElementById("period");
+  if (periodEl) {
+    periodEl.textContent = periodText;
+  }
 
   // 更新期間顯示
   updatePeriodDisplay(periodText);
@@ -580,7 +584,10 @@ document.getElementById("uploadBtn").onclick = async () => {
     document.getElementById("uploadStatus").textContent = "上傳完成";
     const periodText = (r.periodFriendly || r.period || "").trim();
     if (periodText) {
-      document.getElementById("period").textContent = periodText;
+      const periodEl = document.getElementById("period");
+      if (periodEl) {
+        periodEl.textContent = periodText;
+      }
       updatePeriodDisplay(periodText);
     }
     await loadManifest();
@@ -609,6 +616,10 @@ document
       document.getElementById("reupStatus").textContent = "上傳完成";
       const periodText = (r.periodFriendly || r.period || "").trim();
       if (periodText) {
+        const periodEl = document.getElementById("period");
+        if (periodEl) {
+          periodEl.textContent = periodText;
+        }
         updatePeriodDisplay(periodText);
       }
       await loadManifest();
@@ -644,7 +655,10 @@ dz.addEventListener("drop", async (e) => {
       const r = await uploadZipWithProgress(f);
       const periodText = (r.periodFriendly || r.period || "").trim();
       if (periodText) {
-        document.getElementById("period").textContent = periodText;
+        const periodEl = document.getElementById("period");
+        if (periodEl) {
+          periodEl.textContent = periodText;
+        }
         updatePeriodDisplay(periodText);
       }
       await loadManifest();
@@ -766,7 +780,10 @@ window.addEventListener("unhandledrejection", (e) => {
     const m = await fetchJSON("/api/manifest");
     if (m && m.files && Object.keys(m.files).length) {
       const periodText = m.periodFriendly || m.period || "";
-      document.getElementById("period").textContent = periodText;
+      const periodEl = document.getElementById("period");
+      if (periodEl) {
+        periodEl.textContent = periodText;
+      }
       updatePeriodDisplay(periodText);
       await loadManifest();
       show("uploadCard", false);
