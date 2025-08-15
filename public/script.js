@@ -928,6 +928,15 @@ window.addEventListener("unhandledrejection", (e) => {
       }
       updatePeriodDisplay(periodText);
       await loadManifest();
+      
+      // 預設設定台北市租賃
+      const citySel = document.getElementById("city");
+      const typeSel = document.getElementById("type");
+      citySel.value = 'a'; // 台北市
+      typeSel.value = 'c'; // 租賃
+      
+      await loadDistricts(); // 重新載入區域
+      
       show("uploadCard", false);
       show("browser", true);
 
@@ -937,6 +946,9 @@ window.addEventListener("unhandledrejection", (e) => {
       if (type !== 'a') {
         filterGroup.classList.add('hidden');
       }
+      
+      // 自動載入資料
+      await query(1);
     } else {
       show("browser", false);
       show("uploadCard", true);
