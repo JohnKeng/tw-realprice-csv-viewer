@@ -12,15 +12,16 @@
       <div class="container">
         <h2>實價登錄 CSV 瀏覽器</h2>
         <div id="period" class="muted"></div>
-        <span style="float: right"
+        <span style="float: right; display: flex; align-items: center; gap: 8px;"
           >請至
           <a
             target="_blank"
             href="https://plvr.land.moi.gov.tw/DownloadOpenData"
             >內政部不動產成交案件實際資訊資料供應系統</a
           >
-          下載CSV壓縮檔資訊</span
-        >
+          下載<span class="csv-highlight">CSV壓縮檔資訊</span>
+          <button id="zipInfoBtn" class="icon-btn info-btn" title="ZIP檔案規格說明">⚠️</button>
+        </span>
       </div>
     </header>
 
@@ -121,6 +122,14 @@
           </div>
         </div>
 
+        <!-- 期間顯示 -->
+        <div id="periodDisplay" class="period-display hidden">
+          <div class="period-content">
+            <span class="period-icon">📅</span>
+            <span id="periodText" class="period-text"></span>
+          </div>
+        </div>
+
         <div class="card">
           <div class="tableWrap"><div id="table"></div></div>
           <div class="pagination">
@@ -164,6 +173,51 @@
       </div>
       <div class="column-panel-body">
         <div id="columnList"></div>
+      </div>
+    </div>
+
+    <!-- ZIP規格說明彈窗 -->
+    <div id="zipInfoModal" class="zip-info-modal hidden">
+      <div class="zip-info-content">
+        <div class="zip-info-header">
+          <h3>📁 ZIP檔案規格說明</h3>
+          <button id="closeZipInfo" class="icon-btn">✕</button>
+        </div>
+        <div class="zip-info-body">
+          <div class="info-section">
+            <h4>📋 檔案結構與命名</h4>
+            <ul>
+              <li>每個縣市一組檔案，檔名首字為<strong>縣市代碼</strong>：<br>
+                <code>a</code> 臺北市、<code>b</code> 臺中市、<code>c</code> 基隆市、<code>d</code> 臺南市、<code>e</code> 高雄市、<code>f</code> 新北市、<code>g</code> 宜蘭縣、<code>h</code> 桃園市、<code>i</code> 嘉義市、<code>j</code> 新竹縣、<code>k</code> 苗栗縣、<code>m</code> 南投縣、<code>n</code> 彰化縣、<code>o</code> 新竹市、<code>p</code> 雲林縣、<code>q</code> 嘉義縣、<code>t</code> 屏東縣、<code>u</code> 花蓮縣、<code>v</code> 臺東縣、<code>w</code> 金門縣、<code>x</code> 澎湖縣、<code>z</code> 連江縣</li>
+              <li>每縣市依<strong>型別</strong>分成3類：
+                <ul>
+                  <li><code>*_lvr_land_a.csv</code>：<strong>不動產買賣</strong></li>
+                  <li><code>*_lvr_land_b.csv</code>：<strong>預售屋買賣</strong></li>
+                  <li><code>*_lvr_land_c.csv</code>：<strong>不動產租賃</strong></li>
+                </ul>
+              </li>
+              <li><strong>明細檔</strong>（依型別存在與否有差）：
+                <ul>
+                  <li><code>*_lvr_land_?_land.csv</code>：土地明細</li>
+                  <li><code>*_lvr_land_?_build.csv</code>：建物明細</li>
+                  <li><code>*_lvr_land_?_park.csv</code>：車位明細</li>
+                </ul>
+              </li>
+              <li><strong>版本資訊</strong>：<code>build_time.xml</code><br>
+                內含本期資料期間敘述；系統會讀取並顯示於頁面標題下方</li>
+            </ul>
+          </div>
+          
+          <div class="info-section">
+            <h4>⚠️ 注意事項</h4>
+            <ul>
+              <li>若ZIP中只有單一資料夾，本工具會自動上移；但若目錄層級很多，建議壓成ZIP根目錄就放CSV</li>
+              <li>確認ZIP中是否包含 <code>*_lvr_land_*.csv</code> 及 <code>build_time.xml</code></li>
+              <li>macOS/Linux需有系統<code>unzip</code>；Windows使用PowerShell <code>Expand-Archive</code></li>
+              <li>每次上傳會建立<code>data/batch-&lt;timestamp&gt;/</code>目錄，支援同機保留多期資料</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
 

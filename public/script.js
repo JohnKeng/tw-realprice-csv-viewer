@@ -123,8 +123,11 @@ function uploadZipWithProgress(file, opts = {}) {
 // ---------- manifest & districts ----------
 async function loadManifest() {
   const data = await fetchJSON("/api/manifest");
-  document.getElementById("period").textContent =
-    data.periodFriendly || data.period || "";
+  const periodText = data.periodFriendly || data.period || "";
+  document.getElementById("period").textContent = periodText;
+  
+  // 更新期間顯示
+  updatePeriodDisplay(periodText);
 
   // 有資料就把上傳 UI 收起
   if (data && data.files && Object.keys(data.files).length) {
@@ -309,6 +312,19 @@ function closeModal() {
   modalBackdrop.style.display = "none";
   document.body.style.overflow = "";
   modalBody.innerHTML = "";
+}
+
+// 更新期間顯示
+function updatePeriodDisplay(periodText) {
+  const periodDisplay = document.getElementById("periodDisplay");
+  const periodTextEl = document.getElementById("periodText");
+  
+  if (periodText && periodText.trim()) {
+    periodTextEl.textContent = periodText;
+    periodDisplay.classList.remove("hidden");
+  } else {
+    periodDisplay.classList.add("hidden");
+  }
 }
 modalCloseBtn.addEventListener("click", closeModal);
 modalBackdrop.addEventListener("click", closeModal);
@@ -564,8 +580,10 @@ document.getElementById("uploadBtn").onclick = async () => {
     const r = await uploadZipWithProgress(f);
     document.getElementById("uploadStatus").textContent = "上傳完成";
     const periodText = (r.periodFriendly || r.period || "").trim();
-    if (periodText)
+    if (periodText) {
       document.getElementById("period").textContent = periodText;
+      updatePeriodDisplay(periodText);
+    }
     await loadManifest();
     show("uploadCard", false);
     show("browser", true);
@@ -591,8 +609,10 @@ document
       });
       document.getElementById("reupStatus").textContent = "上傳完成";
       const periodText = (r.periodFriendly || r.period || "").trim();
-      if (periodText)
+      if (periodText) {
         document.getElementById("period").textContent = periodText;
+        updatePeriodDisplay(periodText);
+      }
       await loadManifest();
       show("uploadCard", false);
       show("browser", true);
@@ -625,8 +645,10 @@ dz.addEventListener("drop", async (e) => {
     try {
       const r = await uploadZipWithProgress(f);
       const periodText = (r.periodFriendly || r.period || "").trim();
-      if (periodText)
+      if (periodText) {
         document.getElementById("period").textContent = periodText;
+        updatePeriodDisplay(periodText);
+      }
       await loadManifest();
       show("uploadCard", false);
       show("browser", true);
@@ -695,6 +717,25 @@ document.getElementById("resetColumns").onclick = () => {
 document.getElementById("closeInfoCard").onclick = () => {
   document.getElementById("infoCard").classList.add("hidden");
 };
+
+// ZIP規格說明彈窗
+document.getElementById("zipInfoBtn").onclick = () => {
+  document.getElementById("zipInfoModal").classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+};
+
+document.getElementById("closeZipInfo").onclick = () => {
+  document.getElementById("zipInfoModal").classList.add("hidden");
+  document.body.style.overflow = "";
+};
+
+// 點擊背景關閉ZIP說明彈窗
+document.getElementById("zipInfoModal").onclick = (e) => {
+  if (e.target === document.getElementById("zipInfoModal")) {
+    document.getElementById("zipInfoModal").classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+};
 document.getElementById("prev").onclick = () => {
   if (CURRENT.page > 1) query(CURRENT.page - 1);
 };
@@ -726,8 +767,9 @@ window.addEventListener("unhandledrejection", (e) => {
     
     const m = await fetchJSON("/api/manifest");
     if (m && m.files && Object.keys(m.files).length) {
-      document.getElementById("period").textContent =
-        m.periodFriendly || m.period || "";
+      const periodText = m.periodFriendly || m.period || "";
+      document.getElementById("period").textContent = periodText;
+      updatePeriodDisplay(periodText);
       await loadManifest();
       show("uploadCard", false);
       show("browser", true);
