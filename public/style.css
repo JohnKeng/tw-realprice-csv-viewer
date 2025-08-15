@@ -53,6 +53,30 @@ h2 {
   color: var(--muted);
 }
 
+.header-text {
+  float: right;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  .header-text {
+    display: none;
+  }
+  
+  .mobile-only {
+    display: inline-block;
+    position: absolute;
+    right: 22px;
+    top: 22px;
+  }
+}
+
 .card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -264,7 +288,7 @@ progress {
   color: #495057;
 }
 
-/* CSV 強調文字 */
+/* CSV 強調文字 - 僅 "CSV壓縮檔" 五個字 */
 .csv-highlight {
   background: linear-gradient(90deg, #ff8c42, #ffa726);
   color: white;
@@ -407,6 +431,33 @@ progress {
 .info-section strong {
   color: #1976d2;
   font-weight: 600;
+}
+
+.mobile-intro {
+  display: none;
+  background: linear-gradient(135deg, #fff3e0, #ffecb3);
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #ffcc02;
+  margin-bottom: 20px;
+}
+
+.mobile-intro p {
+  margin: 0;
+  color: #e65100;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.mobile-intro .csv-highlight {
+  font-size: 14px;
+}
+
+@media (max-width: 767.98px) {
+  .mobile-intro {
+    display: block;
+  }
 }
 
 @keyframes fadeInScale {

@@ -736,6 +736,12 @@ document.getElementById("zipInfoBtn").onclick = () => {
   document.body.style.overflow = "hidden";
 };
 
+// 手機版ZIP規格說明按鈕
+document.getElementById("zipInfoBtnMobile").onclick = () => {
+  document.getElementById("zipInfoModal").classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+};
+
 document.getElementById("closeZipInfo").onclick = () => {
   document.getElementById("zipInfoModal").classList.add("hidden");
   document.body.style.overflow = "";

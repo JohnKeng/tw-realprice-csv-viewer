@@ -11,16 +11,18 @@
     <header>
       <div class="container">
         <h2>實價登錄 CSV 瀏覽器</h2>
-        <span style="float: right; display: flex; align-items: center; gap: 8px;"
-          >請至
+        <span class="header-text">請至
           <a
             target="_blank"
             href="https://plvr.land.moi.gov.tw/DownloadOpenData"
             >內政部不動產成交案件實際資訊資料供應系統</a
           >
-          下載<span class="csv-highlight">CSV壓縮檔資訊</span>
+          下載<span class="csv-highlight">CSV壓縮檔</span>資訊
           <button id="zipInfoBtn" class="icon-btn info-btn" title="ZIP檔案規格說明">⚠️</button>
         </span>
+        
+        <!-- 手機版按鈕 -->
+        <button id="zipInfoBtnMobile" class="info-btn mobile-only" title="ZIP檔案規格說明">⚠️</button>
       </div>
     </header>
 
@@ -183,6 +185,12 @@
           <button id="closeZipInfo" class="icon-btn">✕</button>
         </div>
         <div class="zip-info-body">
+          <div class="info-section mobile-intro">
+            <p><strong>請至 
+              <a target="_blank" href="https://plvr.land.moi.gov.tw/DownloadOpenData">內政部不動產成交案件實際資訊資料供應系統</a> 
+              下載<span class="csv-highlight">CSV壓縮檔</span>資訊</strong></p>
+          </div>
+          
           <div class="info-section">
             <h4>📋 檔案結構與命名</h4>
             <ul>
