@@ -483,9 +483,7 @@ function createInfoSection(header, row) {
     isLandTransaction = transactionSign.includes('土地') && !transactionSign.includes('房地');
   }
   
-  // 檢查是否為租賃交易（通過檢查URL type參數或租金相關欄位）
-  const url = new URL(window.location);
-  const urlParams = new URLSearchParams(url.search);
+  // 檢查是否為租賃交易
   const currentType = document.getElementById("type").value;
   isRentalTransaction = currentType === 'c';
 
