@@ -462,13 +462,30 @@ function renderKV(header, row, colsPerRow = 3) {
 
 // ---------- 資訊卡（整合到彈窗中） ----------
 function createInfoSection(header, row) {
-  // 取得相關欄位的索引 - 使用更精確的搜尋
-  const dateIdx = header.findIndex(h => h.includes("交易年月日"));
-  const addressIdx = header.findIndex(h => h.includes("土地位置建物門牌") || h.includes("土地位置或建物門牌"));
-  const totalPriceIdx = header.findIndex(h => h.includes("總價元") && !h.includes("平方公尺"));
-  const buildingAreaIdx = header.findIndex(h => h.includes("建物移轉總面積平方公尺") || h.includes("建物現況格局-總面積平方公尺"));
-  const landAreaIdx = header.findIndex(h => h.includes("土地移轉總面積平方公尺"));
-  const transactionSignIdx = header.findIndex(h => h.includes("交易標的"));
+  // 判斷交易類型
+  const currentType = document.getElementById("type").value;
+  const isRentalTransaction = (currentType === 'c');
+  
+  // 根據交易類型使用不同的欄位名稱搜尋
+  let dateIdx, addressIdx, totalPriceIdx, buildingAreaIdx, landAreaIdx, transactionSignIdx;
+  
+  if (isRentalTransaction) {
+    // 租賃交易的欄位名稱
+    dateIdx = header.findIndex(h => h.includes("租賃年月日") || h.includes("交易年月日"));
+    addressIdx = header.findIndex(h => h.includes("土地位置建物門牌") || h.includes("土地位置或建物門牌"));
+    totalPriceIdx = header.findIndex(h => h.includes("月租金元") || h.includes("總價元"));
+    buildingAreaIdx = header.findIndex(h => h.includes("建物現況格局-總面積平方公尺") || h.includes("建物移轉總面積平方公尺"));
+    landAreaIdx = header.findIndex(h => h.includes("土地移轉總面積平方公尺"));
+    transactionSignIdx = header.findIndex(h => h.includes("交易標的"));
+  } else {
+    // 買賣交易的欄位名稱
+    dateIdx = header.findIndex(h => h.includes("交易年月日"));
+    addressIdx = header.findIndex(h => h.includes("土地位置建物門牌") || h.includes("土地位置或建物門牌"));
+    totalPriceIdx = header.findIndex(h => h.includes("總價元") && !h.includes("平方公尺"));
+    buildingAreaIdx = header.findIndex(h => h.includes("建物移轉總面積平方公尺") || h.includes("建物現況格局-總面積平方公尺"));
+    landAreaIdx = header.findIndex(h => h.includes("土地移轉總面積平方公尺"));
+    transactionSignIdx = header.findIndex(h => h.includes("交易標的"));
+  }
 
   console.log('Debug - Header indices:', {
     dateIdx, addressIdx, totalPriceIdx, buildingAreaIdx, landAreaIdx, transactionSignIdx
@@ -485,11 +502,6 @@ function createInfoSection(header, row) {
 
   // 判斷交易類型
   let isLandTransaction = false;
-  let isRentalTransaction = false;
-  
-  // 檢查是否為租賃交易
-  const currentType = document.getElementById("type").value;
-  isRentalTransaction = (currentType === 'c');
   
   // 檢查是否為土地交易（只在非租賃時判斷）
   if (!isRentalTransaction && transactionSignIdx >= 0 && row[transactionSignIdx]) {
